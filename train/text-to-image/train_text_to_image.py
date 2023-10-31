@@ -482,7 +482,10 @@ def main(args):
         torch.manual_seed(args.seed)
         transformers.set_seed(args.seed)
 
-    accelerator_project_config = ProjectConfiguration(total_limit=args.checkpoints_total_limit)
+    accelerator_project_config = ProjectConfiguration(
+        logging_dir=args.model_dir,
+        total_limit=args.checkpoints_total_limit
+    )
 
     accelerator = Accelerator(
         gradient_accumulation_steps=args.gradient_accumulation_steps,
