@@ -1097,7 +1097,7 @@ def main(args):
         # Final inference
         # Load previous pipeline
         pipeline = StableDiffusionXLPipeline.from_pretrained(
-            args.pretrained_model_name_or_path, vae=vae, revision=args.revision, torch_dtype=weight_dtype
+            MODEL_UNTARRED_PATH, vae=vae, revision=None, torch_dtype=weight_dtype
         )
         pipeline = pipeline.to(accelerator.device)
 
