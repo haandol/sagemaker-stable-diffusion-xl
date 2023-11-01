@@ -5,6 +5,6 @@ WORKDIR /opt/ml/code
 COPY requirements.txt /opt/ml/code/
 RUN pip3 install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cu118
 
-COPY train_text_to_image.py /opt/ml/code/
+COPY train_text_to_image_lora.py /opt/ml/code/
 
 ENV SAGEMAKER_PROGRAM train_text_to_image_lora.py
