@@ -360,10 +360,10 @@ def parse_args():
         help="The scale of noise offset.",
     )
     parser.add_argument(
-        "--validation_steps",
+        "--validation_epochs",
         type=int,
-        default=50,
-        help="Run validation every X steps.",
+        default=1,
+        help=("Run fine-tuning validation every X epochs. The validation process consists of running the prompt"),
     )
     parser.add_argument(
         "--tracker_project_name",
@@ -959,7 +959,7 @@ def main(args):
         if accelerator.is_main_process:
             validation_prompts = get_validation_prompts(args)
 
-            if validation_prompts is not None and global_step % args.validation_steps == 0:
+            if validation_prompts is not None and epoch % args.validation_epochs == 0:
                 logger.info(
                     f"Running validation... \n Generating images with prompt:"
                     f" {validation_prompts}."
@@ -991,12 +991,11 @@ def main(args):
 
                 # run inference
                 generator = torch.Generator(device=accelerator.device).manual_seed(args.seed) if args.seed else None
-                pipeline_args = {"prompt": args.validation_prompt}
 
                 with torch.cuda.amp.autocast():
                     images = [
-                        pipeline(**pipeline_args, generator=generator, num_inference_steps=25).images[0]
-                        for _ in range(len(validation_prompts))
+                        pipeline(prompt=validation_prompt, generator=generator, num_inference_steps=25).images[0]
+                        for validation_prompt in validation_prompts
                     ]
 
                 for tracker in accelerator.trackers:
