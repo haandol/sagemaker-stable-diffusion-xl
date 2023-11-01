@@ -136,12 +136,6 @@ def parse_args():
         help="Path to pretrained VAE model with better numerical stability. More details: https://github.com/huggingface/diffusers/pull/4038.",
     )
     parser.add_argument(
-        "--num_validation_images",
-        type=int,
-        default=1,
-        help="Number of images that should be generated during validation with `validation_prompt`.",
-    )
-    parser.add_argument(
         "--max_train_samples",
         type=int,
         default=None,
@@ -1002,7 +996,7 @@ def main(args):
                 with torch.cuda.amp.autocast():
                     images = [
                         pipeline(**pipeline_args, generator=generator, num_inference_steps=25).images[0]
-                        for _ in range(args.num_validation_images)
+                        for _ in range(len(validation_prompts))
                     ]
 
                 for tracker in accelerator.trackers:
