@@ -130,10 +130,16 @@ def parse_args():
         help="Directory with the training data.",
     )
     parser.add_argument(
-        "--input_perturbation",
-        type=float,
+        "--pretrained_vae_model_name_or_path",
+        type=str,
         default=None,
-        help="The scale of input perturbation. Recommended 0.1.",
+        help="Path to pretrained VAE model with better numerical stability. More details: https://github.com/huggingface/diffusers/pull/4038.",
+    )
+    parser.add_argument(
+        "--num_validation_images",
+        type=int,
+        default=1,
+        help="Number of images that should be generated during validation with `validation_prompt`.",
     )
     parser.add_argument(
         "--max_train_samples",
@@ -521,8 +527,15 @@ def main(args):
     text_encoder_two = text_encoder_cls_two.from_pretrained(
         MODEL_UNTARRED_PATH, subfolder="text_encoder_2", revision=None
     )
+    vae_path = (
+        MODEL_UNTARRED_PATH
+        if args.pretrained_vae_model_name_or_path is None
+        else args.pretrained_vae_model_name_or_path
+    )
     vae = AutoencoderKL.from_pretrained(
-        MODEL_UNTARRED_PATH, subfolder="vae", revision=None
+        vae_path,
+        subfolder="vae" if args.pretrained_vae_model_name_or_path is None else None,
+        revision=None
     )
     unet = UNet2DConditionModel.from_pretrained(
         MODEL_UNTARRED_PATH, subfolder="unet", revision=None
@@ -964,8 +977,8 @@ def main(args):
 
                 # create pipeline
                 vae = AutoencoderKL.from_pretrained(
-                    MODEL_UNTARRED_PATH,
-                    subfolder="vae",
+                    vae_path,
+                    subfolder="vae" if args.pretrained_vae_model_name_or_path is None else None,
                     revision=None,
                 )
                 pipeline = StableDiffusionXLPipeline.from_pretrained(
@@ -1017,8 +1030,8 @@ def main(args):
 
         # Serialize pipeline.
         vae = AutoencoderKL.from_pretrained(
-            MODEL_UNTARRED_PATH,
-            subfolder="vae",
+            vae_path,
+            subfolder="vae" if args.pretrained_vae_model_name_or_path is None else None,
             revision=None,
             torch_dtype=weight_dtype,
         )
