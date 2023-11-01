@@ -183,7 +183,8 @@ def parse_args():
     )
     parser.add_argument(
         "--train_text_encoder",
-        action="store_true",
+        type=str2bool,
+        default=False,
         help="Whether to train the text encoder. If set, the text encoder should be float32 precision.",
     )
     parser.add_argument(
