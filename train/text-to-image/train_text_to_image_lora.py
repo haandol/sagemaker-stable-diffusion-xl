@@ -1081,7 +1081,7 @@ def main(args):
             text_encoder_2_lora_layers = None
 
         StableDiffusionXLPipeline.save_lora_weights(
-            save_directory=args.output_dir,
+            save_directory=args.model_dir,
             unet_lora_layers=unet_lora_layers,
             text_encoder_lora_layers=text_encoder_lora_layers,
             text_encoder_2_lora_layers=text_encoder_2_lora_layers,
@@ -1102,7 +1102,7 @@ def main(args):
         pipeline = pipeline.to(accelerator.device)
 
         # load attention processors
-        pipeline.load_lora_weights(args.output_dir)
+        pipeline.load_lora_weights(args.model_dir)
 
         # run inference
         images = []
