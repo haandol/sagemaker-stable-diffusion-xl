@@ -763,7 +763,7 @@ def main(args):
         text_encoders=text_encoders,
         tokenizers=tokenizers,
         proportion_empty_prompts=args.proportion_empty_prompts,
-        caption_column=args.caption_column,
+        caption_column=caption_column,
     )
     compute_vae_encodings_fn = functools.partial(compute_vae_encodings, vae=vae)
     with accelerator.main_process_first():
