@@ -41,7 +41,7 @@ from packaging import version
 from torchvision import transforms
 from torchvision.transforms.functional import crop
 from tqdm.auto import tqdm
-from transformers import CLIPTokenizer, CLIPTextModel
+from transformers import AutoTokenizer, PretrainedConfig
 
 import diffusers
 from diffusers import (
@@ -85,56 +85,24 @@ def get_validation_prompts(args):
         raise
 
 
-def log_validation(vae, text_encoder, tokenizer, unet, args,
-                   validation_prompts, accelerator, weight_dtype, epoch):
-    logger.info("Running validation... ")
-
-    pipeline = StableDiffusionXLPipeline.from_pretrained(
-        MODEL_UNTARRED_PATH,
-        vae=accelerator.unwrap_model(vae),
-        text_encoder=accelerator.unwrap_model(text_encoder),
-        tokenizer=tokenizer,
-        unet=accelerator.unwrap_model(unet),
-        safety_checker=None,
-        revision=None,
-        torch_dtype=weight_dtype,
+def import_model_class_from_model_name_or_path(
+    pretrained_model_name_or_path: str, revision: str, subfolder: str = "text_encoder"
+):
+    text_encoder_config = PretrainedConfig.from_pretrained(
+        pretrained_model_name_or_path, subfolder=subfolder, revision=revision
     )
-    pipeline = pipeline.to(accelerator.device)
-    pipeline.set_progress_bar_config(disable=True)
+    model_class = text_encoder_config.architectures[0]
 
-    if args.enable_xformers_memory_efficient_attention:
-        pipeline.enable_xformers_memory_efficient_attention()
+    if model_class == "CLIPTextModel":
+        from transformers import CLIPTextModel
 
-    if args.seed is None:
-        generator = None
+        return CLIPTextModel
+    elif model_class == "CLIPTextModelWithProjection":
+        from transformers import CLIPTextModelWithProjection
+
+        return CLIPTextModelWithProjection
     else:
-        generator = torch.Generator(device=accelerator.device).manual_seed(args.seed)
-
-    images = []
-    for i in range(len(validation_prompts)):
-        with torch.autocast("cuda"):
-            image = pipeline(validation_prompts[i], num_inference_steps=20, generator=generator).images[0]
-
-        images.append(image)
-
-    for tracker in accelerator.trackers:
-        if tracker.name == "tensorboard":
-            np_images = np.stack([np.asarray(img) for img in images])
-            tracker.writer.add_images("validation", np_images, epoch, dataformats="NHWC")
-        elif tracker.name == "wandb":
-            tracker.log(
-                {
-                    "validation": [
-                        wandb.Image(image, caption=f"{i}: {validation_prompts[i]}")
-                        for i, image in enumerate(images)
-                    ]
-                }
-            )
-        else:
-            logger.warn(f"image logging not implemented for {tracker.name}")
-
-    del pipeline
-    torch.cuda.empty_cache()
+        raise ValueError(f"{model_class} is not supported.")
 
 
 def str2bool(x: str) -> bool:
@@ -515,16 +483,20 @@ def main(args):
         diffusers.utils.logging.set_verbosity_error()
         
     # Load the tokenizers
-    tokenizer_one = CLIPTokenizer.from_pretrained(
-        MODEL_UNTARRED_PATH, subfolder="tokenizer", revision=None,
+    tokenizer_one = AutoTokenizer.from_pretrained(
+        MODEL_UNTARRED_PATH, subfolder="tokenizer", revision=None, use_fast=False,
     )
-    tokenizer_two = CLIPTokenizer.from_pretrained(
-        MODEL_UNTARRED_PATH, subfolder="tokenizer_2", revision=None,
+    tokenizer_two = AutoTokenizer.from_pretrained(
+        MODEL_UNTARRED_PATH, subfolder="tokenizer_2", revision=None, use_fast=False
     )
     
     # import correct text encoder classes
-    text_encoder_cls_one = CLIPTextModel
-    text_encoder_cls_two = CLIPTextModel
+    text_encoder_cls_one = import_model_class_from_model_name_or_path(
+        MODEL_UNTARRED_PATH, revision=None,
+    )
+    text_encoder_cls_two = import_model_class_from_model_name_or_path(
+        MODEL_UNTARRED_PATH, revision=None, subfolder="text_encoder_2",
+    )
 
     # Load scheduler, tokenizer and models.
     noise_scheduler = DDPMScheduler.from_pretrained(
