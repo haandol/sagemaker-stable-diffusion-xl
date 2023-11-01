@@ -382,7 +382,7 @@ def parse_args():
     parser.add_argument(
         "--enable_xformers_memory_efficient_attention",
         type=str2bool,
-        default=True,
+        default=False,
         help="Whether or not to use xformers."
     )
     parser.add_argument(
