@@ -33,7 +33,6 @@ import torch.nn.functional as F
 import torch.utils.checkpoint
 import transformers
 from accelerate import Accelerator
-from accelerate.logging import get_logger
 from accelerate.utils import (
     DistributedDataParallelKwargs,
     ProjectConfiguration,
@@ -65,7 +64,10 @@ from diffusers.utils.import_utils import is_xformers_available
 # Will error if the minimal version of diffusers is not installed. Remove at your own risks.
 check_min_version("0.25.0")
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+handler = logging.StreamHandler(sys.stdout)
+logger.addHandler(handler)
 
 
 def get_validation_prompt(args):
