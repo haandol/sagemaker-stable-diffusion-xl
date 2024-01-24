@@ -66,8 +66,6 @@ from diffusers.utils.import_utils import is_xformers_available
 check_min_version("0.25.0")
 
 logger = get_logger(__name__)
-handler = logging.StreamHandler(sys.stdout)
-logger.addHandler(handler)
 
 
 def get_validation_prompt(args):
