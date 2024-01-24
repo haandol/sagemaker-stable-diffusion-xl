@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # The name of our algorithm
-algorithm_name=text-to-image-training-gpu
+algorithm_name=sdxl-text-to-image-lora-training-gpu
 
 account=$(aws sts get-caller-identity --query Account --output text)
 
