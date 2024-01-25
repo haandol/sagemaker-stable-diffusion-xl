@@ -490,6 +490,9 @@ def main(args):
         project_config=accelerator_project_config,
         kwargs_handlers=[kwargs],
     )
+    logger.info(
+        f"Accelerator has determined the num processes to be: {accelerator.num_processes}"
+    )
 
     if args.report_to == "wandb":
         if not is_wandb_available():
