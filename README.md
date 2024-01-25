@@ -31,6 +31,6 @@ TBU
 
 # Test
 
-open [inference.ipynb](/notebook/test/inference.ipynb) on `conda_python3` kernel.
+open [sdxl-lora-inference.ipynb](/notebook/test/sdxl-lora-inference.ipynb) on `conda_python3` kernel.
 
 TBU
