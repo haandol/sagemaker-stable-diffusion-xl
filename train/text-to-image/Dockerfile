@@ -8,4 +8,4 @@ RUN pip3 install -r requirements.txt --extra-index-url https://download.pytorch.
 
 COPY sdxl-lora-sagemaker.py /opt/ml/code/
 
-ENV SAGEMAKER_PROGRAM sdxl-lora-sagemaker.py
+ENV SAGEMAKER_PROGRAM "accelerate launch sdxl-lora-sagemaker.py"
