@@ -216,7 +216,6 @@ def parse_args(input_args=None):
         "--center_crop",
         type=str2bool,
         default=False,
-        action="store_true",
         help=(
             "Whether to center crop the input images to the resolution. If not set, the images will be randomly"
             " cropped. The images will be resized to the resolution first before cropping."
@@ -226,14 +225,12 @@ def parse_args(input_args=None):
         "--random_flip",
         type=str2bool,
         default=True,
-        action="store_true",
         help="whether to randomly flip images horizontally",
     )
     parser.add_argument(
         "--train_text_encoder",
         type=str2bool,
         default=False,
-        action="store_true",
         help="Whether to train the text encoder. If set, the text encoder should be float32 precision.",
     )
     parser.add_argument(
@@ -275,7 +272,6 @@ def parse_args(input_args=None):
         "--gradient_checkpointing",
         type=str2bool,
         default=False,
-        action="store_true",
         help="Whether or not to use gradient checkpointing to save memory at the expense of slower backward pass.",
     )
     parser.add_argument(
@@ -288,7 +284,6 @@ def parse_args(input_args=None):
         "--scale_lr",
         type=str2bool,
         default=False,
-        action="store_true",
         help="Scale the learning rate by the number of GPUs, gradient accumulation steps, and batch size.",
     )
     parser.add_argument(
@@ -317,7 +312,6 @@ def parse_args(input_args=None):
         "--allow_tf32",
         type=str2bool,
         default=False,
-        action="store_true",
         help=(
             "Whether or not to allow TF32 on Ampere GPUs. Can be used to speed up training. For more information, see"
             " https://pytorch.org/docs/stable/notes/cuda.html#tensorfloat-32-tf32-on-ampere-devices"
@@ -335,7 +329,6 @@ def parse_args(input_args=None):
         "--use_8bit_adam",
         type=str2bool,
         default=False,
-        action="store_true",
         help="Whether or not to use 8-bit Adam from bitsandbytes.",
     )
     parser.add_argument(
@@ -407,7 +400,6 @@ def parse_args(input_args=None):
         "--enable_xformers_memory_efficient_attention",
         type=str2bool,
         default=False,
-        action="store_true",
         help="Whether or not to use xformers.",
     )
     parser.add_argument(
