@@ -56,7 +56,11 @@ from diffusers import (
 )
 from diffusers.loaders import LoraLoaderMixin
 from diffusers.optimization import get_scheduler
-from diffusers.training_utils import _set_state_dict_into_text_encoder, cast_training_params, compute_snr
+from diffusers.training_utils import (
+    _set_state_dict_into_text_encoder,
+    cast_training_params,
+    compute_snr,
+)
 from diffusers.utils import (
     check_min_version,
     convert_state_dict_to_diffusers,
@@ -68,7 +72,7 @@ from diffusers.utils.torch_utils import is_compiled_module
 
 
 # Will error if the minimal version of diffusers is not installed. Remove at your own risks.
-check_min_version("0.25.0")
+check_min_version("0.26.0")
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -668,14 +672,24 @@ def main(args):
 
             for model in models:
                 if isinstance(unwrap_model(model), type(unwrap_model(unet))):
-                    unet_lora_layers_to_save = convert_state_dict_to_diffusers(get_peft_model_state_dict(model))
-                elif isinstance(unwrap_model(model), type(unwrap_model(text_encoder_one))):
-                    text_encoder_one_lora_layers_to_save = convert_state_dict_to_diffusers(
+                    unet_lora_layers_to_save = convert_state_dict_to_diffusers(
                         get_peft_model_state_dict(model)
                     )
-                elif isinstance(unwrap_model(model), type(unwrap_model(text_encoder_two))):
-                    text_encoder_two_lora_layers_to_save = convert_state_dict_to_diffusers(
-                        get_peft_model_state_dict(model)
+                elif isinstance(
+                    unwrap_model(model), type(unwrap_model(text_encoder_one))
+                ):
+                    text_encoder_one_lora_layers_to_save = (
+                        convert_state_dict_to_diffusers(
+                            get_peft_model_state_dict(model)
+                        )
+                    )
+                elif isinstance(
+                    unwrap_model(model), type(unwrap_model(text_encoder_two))
+                ):
+                    text_encoder_two_lora_layers_to_save = (
+                        convert_state_dict_to_diffusers(
+                            get_peft_model_state_dict(model)
+                        )
                     )
                 else:
                     raise ValueError(f"unexpected save model: {model.__class__}")
@@ -709,9 +723,15 @@ def main(args):
                 raise ValueError(f"unexpected save model: {model.__class__}")
 
         lora_state_dict, _ = LoraLoaderMixin.lora_state_dict(input_dir)
-        unet_state_dict = {f'{k.replace("unet.", "")}': v for k, v in lora_state_dict.items() if k.startswith("unet.")}
+        unet_state_dict = {
+            f'{k.replace("unet.", "")}': v
+            for k, v in lora_state_dict.items()
+            if k.startswith("unet.")
+        }
         unet_state_dict = convert_unet_state_dict_to_peft(unet_state_dict)
-        incompatible_keys = set_peft_model_state_dict(unet_, unet_state_dict, adapter_name="default")
+        incompatible_keys = set_peft_model_state_dict(
+            unet_, unet_state_dict, adapter_name="default"
+        )
         if incompatible_keys is not None:
             # check only for unexpected keys
             unexpected_keys = getattr(incompatible_keys, "unexpected_keys", None)
@@ -722,10 +742,14 @@ def main(args):
                 )
 
         if args.train_text_encoder:
-            _set_state_dict_into_text_encoder(lora_state_dict, prefix="text_encoder.", text_encoder=text_encoder_one_)
+            _set_state_dict_into_text_encoder(
+                lora_state_dict, prefix="text_encoder.", text_encoder=text_encoder_one_
+            )
 
             _set_state_dict_into_text_encoder(
-                lora_state_dict, prefix="text_encoder_2.", text_encoder=text_encoder_two_
+                lora_state_dict,
+                prefix="text_encoder_2.",
+                text_encoder=text_encoder_two_,
             )
 
         # Make sure the trainable params are in float32. This is again needed since the base models
@@ -753,7 +777,10 @@ def main(args):
 
     if args.scale_lr:
         args.learning_rate = (
-            args.learning_rate * args.gradient_accumulation_steps * args.train_batch_size * accelerator.num_processes
+            args.learning_rate
+            * args.gradient_accumulation_steps
+            * args.train_batch_size
+            * accelerator.num_processes
         )
 
     # Make sure the trainable params are in float32.
@@ -1123,9 +1150,9 @@ def main(args):
                     # Since we predict the noise instead of x_0, the original formulation is slightly changed.
                     # This is discussed in Section 4.2 of the same paper.
                     snr = compute_snr(noise_scheduler, timesteps)
-                    mse_loss_weights = torch.stack([snr, args.snr_gamma * torch.ones_like(timesteps)], dim=1).min(
-                        dim=1
-                    )[0]
+                    mse_loss_weights = torch.stack(
+                        [snr, args.snr_gamma * torch.ones_like(timesteps)], dim=1
+                    ).min(dim=1)[0]
                     if noise_scheduler.config.prediction_type == "epsilon":
                         mse_loss_weights = mse_loss_weights / snr
                     elif noise_scheduler.config.prediction_type == "v_prediction":
@@ -1268,14 +1295,20 @@ def main(args):
     accelerator.wait_for_everyone()
     if accelerator.is_main_process:
         unet = unwrap_model(unet)
-        unet_lora_state_dict = convert_state_dict_to_diffusers(get_peft_model_state_dict(unet))
+        unet_lora_state_dict = convert_state_dict_to_diffusers(
+            get_peft_model_state_dict(unet)
+        )
 
         if args.train_text_encoder:
             text_encoder_one = unwrap_model(text_encoder_one)
             text_encoder_two = unwrap_model(text_encoder_two)
 
-            text_encoder_lora_layers = convert_state_dict_to_diffusers(get_peft_model_state_dict(text_encoder_one))
-            text_encoder_2_lora_layers = convert_state_dict_to_diffusers(get_peft_model_state_dict(text_encoder_two))
+            text_encoder_lora_layers = convert_state_dict_to_diffusers(
+                get_peft_model_state_dict(text_encoder_one)
+            )
+            text_encoder_2_lora_layers = convert_state_dict_to_diffusers(
+                get_peft_model_state_dict(text_encoder_two)
+            )
         else:
             text_encoder_lora_layers = None
             text_encoder_2_lora_layers = None
