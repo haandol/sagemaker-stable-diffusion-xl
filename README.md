@@ -27,13 +27,13 @@ cd sagemaker-stable-diffusion-xl/train/text-to-image
 
 ## Text-to-Image Lora
 
-open [text-to-image/sdxl-lora.ipynb](/notebook/train/text-to-image/sdxl-lora.ipynb) on `conda_python3` kernel.
+open [train/text-to-image/sdxl-lora.ipynb](/notebook/train/text-to-image/sdxl-lora.ipynb) on `conda_python3` kernel.
 
 TBU
 
 ## ControlNet
 
-open [controlnet/sdxl.ipynb](/notebook/train/controlnet/sdxl.ipynb) on `conda_python3` kernel.
+open [train/controlnet/sdxl.ipynb](/notebook/train/controlnet/sdxl.ipynb) on `conda_python3` kernel.
 
 TBU
 
