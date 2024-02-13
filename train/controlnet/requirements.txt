@@ -5,7 +5,6 @@ Jinja2
 datasets
 accelerate>=0.22.0
 torchvision
-peft==0.7.0
 transformers>=4.25.1
 diffusers>=0.26.2
 bitsandbytes
