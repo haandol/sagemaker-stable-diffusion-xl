@@ -306,6 +306,12 @@ def parse_args(input_args=None):
         ),
     )
     parser.add_argument(
+        "--lr_num_cycles",
+        type=int,
+        default=1,
+        help=("The restart cycles for cosine_with_restart of lr_scheduler."),
+    )
+    parser.add_argument(
         "--lr_warmup_steps",
         type=int,
         default=500,
@@ -968,6 +974,7 @@ def main(args):
     lr_scheduler = get_scheduler(
         args.lr_scheduler,
         optimizer=optimizer,
+        num_cycles=args.lr_num_cycles,
         num_warmup_steps=args.lr_warmup_steps * args.gradient_accumulation_steps,
         num_training_steps=args.max_train_steps * args.gradient_accumulation_steps,
     )
